@@ -1,0 +1,19 @@
+# ==============================================================================
+# config
+img_width: 1024
+img_height: 896
+# The value of keep_ratio must be the same as the [KEEP_RATIO] parameter in Ascend310 inference
+keep_ratio: True
+flip_ratio: 0.5
+expand_ratio: 1.0
+
+num_parallel_workers: 8
+python_multiprocessing: True
+mindrecord_dir: './dataset/mindrecord/'
+image_dir: './dataset/WIDER_train/images/'
+anno_path: './dataset/wider_face_split/wider_face_train_bbx_gt.txt'
+
+batch_size: 1
+
+# bbox_assign_sampler
+num_gts: 128
