@@ -58,8 +58,7 @@ def train_ssh():
     net = net.set_train()
 
 
-
-
+'''
 dataset_size, dataset = prepare_wider_dataset()
 print(dataset_size)
 for t in dataset.create_tuple_iterator():
@@ -74,3 +73,4 @@ for t in dataset.create_tuple_iterator():
     draw_0 = cv2.rectangle(tmp, (int(c[0]), int(c[1])), (int(c[2]), int(c[3])), (255, 0, 0), 2)
     cv2.imshow('t', draw_0)
     cv2.waitKey(0)
+'''

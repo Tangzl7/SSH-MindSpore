@@ -17,3 +17,8 @@ batch_size: 1
 
 # bbox_assign_sampler
 num_gts: 128
+
+# anchor
+anchor_scales: [[2, 4], [4, 8], [8, 16]]
+anchor_ratios: [1.0]
+anchor_base_sizes: [8, 16, 32]

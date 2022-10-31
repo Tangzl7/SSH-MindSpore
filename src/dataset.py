@@ -307,5 +307,3 @@ def create_wider_dataset(config, mindrecord_file, batch_size=2, device_num=1, ra
                     num_parallel_workers=num_parallel_workers)
         ds = ds.batch(batch_size, drop_remainder=True)
     return ds
-
-# create_train_data_from_txt('../dataset/WIDER_train/images/', '../dataset/wider_face_split/wider_face_train_bbx_gt.txt')
