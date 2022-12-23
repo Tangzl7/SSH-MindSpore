@@ -178,7 +178,7 @@ def expand_column(img, img_shape, gt_bboxes):
 def preprocess_fn(image, box, is_training, config):
     """Preprocess function for dataset."""
 
-    def _infer_data(image_bgr, image_shape, gt_box_new, gt_valid_new):
+    def _infer_data(image_bgr, image_shape, gt_box_new, gt_label, gt_valid_new):
         image_shape = image_shape[:2]
         input_data = image_bgr, image_shape, gt_box_new
 
@@ -189,7 +189,7 @@ def preprocess_fn(image, box, is_training, config):
         input_data = imnormalize_column(*input_data)
 
         output_data = transpose_column(*input_data)
-        return *output_data, gt_valid_new
+        return *output_data, gt_label, gt_valid_new
 
     def _data_aug(image, box, is_training):
         """Data augmentation function."""
@@ -202,11 +202,12 @@ def preprocess_fn(image, box, is_training, config):
         image_bgr[:, :, 2] = image[:, :, 0]
         image_shape = image_bgr.shape[:2]
         gt_box, gt_valid = box[:, :4], box[:, 4]
+        gt_label = np.ones(pad_max_number, dtype=np.uint8)
         gt_box_new = np.pad(gt_box, ((0, pad_max_number - box.shape[0]), (0, 0)), mode="constant", constant_values=0)
         gt_valid_new = np.pad(gt_valid, (0, pad_max_number - box.shape[0]), mode="constant", constant_values=0)
 
         if not is_training:
-            return _infer_data(image_bgr, image_shape, gt_box_new, gt_valid_new)
+            return _infer_data(image_bgr, image_shape, gt_box_new, gt_label, gt_valid_new)
 
         flip = (np.random.rand() < config.flip_ratio)
         expand = (np.random.rand() < config.expand_ratio)
@@ -223,7 +224,7 @@ def preprocess_fn(image, box, is_training, config):
             input_data = flip_column(*input_data)
 
         output_data = transpose_column(*input_data)
-        return *output_data, np.array(gt_valid_new, dtype=np.bool)
+        return *output_data, gt_label, gt_valid_new
 
     return _data_aug(image, box, is_training)
 
@@ -294,15 +295,15 @@ def create_wider_dataset(config, mindrecord_file, batch_size=2, device_num=1, ra
 
     if is_training:
         ds = ds.map(input_columns=["image", "annotation"],
-                    output_columns=["image", "image_shape", "box", "valid_num"],
-                    column_order=["image", "image_shape", "box", "valid_num"],
+                    output_columns=["image", "image_shape", "box", "label", "valid_num"],
+                    column_order=["image", "image_shape", "box", "label", "valid_num"],
                     operations=compose_map_func, python_multiprocessing=python_multiprocessing,
                     num_parallel_workers=num_parallel_workers)
         ds = ds.batch(batch_size, drop_remainder=True)
     else:
         ds = ds.map(input_columns=["image", "annotation"],
-                    output_columns=["image", "image_shape", "box", "valid_num"],
-                    column_order=["image", "image_shape", "box"],
+                    output_columns=["image", "image_shape", "box", "label", "valid_num"],
+                    column_order=["image", "image_shape", "box", "label", "valid_num"],
                     operations=compose_map_func,
                     num_parallel_workers=num_parallel_workers)
         ds = ds.batch(batch_size, drop_remainder=True)

@@ -3,14 +3,19 @@ import cv2
 import time
 import numpy as np
 
-from src.ssh import SSH
+from mindspore.nn import SGD
+from mindspore import context
+import mindspore.common.dtype as mstype
+
 from src.config import config
+from src.train_ssh import TrainSSH
+from src.network_define import LossNet
 from src.dataset import data_to_mindrecord_byte_image, create_wider_dataset
 
 
 rank = 0
 device_num = 1
-
+context.set_context(mode=context.PYNATIVE_MODE, device_target=config.device_target, device_id=0)
 
 def prepare_wider_dataset():
     """ prepare wider dataset """
@@ -54,10 +59,19 @@ def prepare_wider_dataset():
 def train_ssh():
     dataset_size, dataset = prepare_wider_dataset()
 
-    net = SSH()
+    net = TrainSSH(config)
     net = net.set_train()
 
+    device_type = "Ascend" if context.get_context("device_target") == "Ascend" else "Others"
+    if device_type == "Ascend":
+        net.to_float(mstype.float16)
 
+    loss = LossNet()
+    opt = SGD(params=net.trainable_params(), learning_rate=lr, momentum=config.momentum,
+              weight_decay=config.weight_decay, loss_scale=config.loss_scale)
+
+
+train_ssh()
 '''
 dataset_size, dataset = prepare_wider_dataset()
 print(dataset_size)

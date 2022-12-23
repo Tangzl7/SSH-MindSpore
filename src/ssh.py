@@ -37,7 +37,7 @@ class DetectModule(nn.Cell):
         self.conv = nn.SequentialCell([nn.Conv2d(in_channels, in_channels, 3, pad_mode='same'), 
                         nn.ReLU()])
         self.context_module = ContextModule(in_channels)
-        self.cls = nn.Conv2d(2*in_channels, 4, 1)
+        self.cls = nn.Conv2d(2*in_channels, 2, 1)
         self.reg = nn.Conv2d(2*in_channels, 8, 1)
         self.concat = ops.Concat(1)
     
