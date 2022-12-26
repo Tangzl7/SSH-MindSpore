@@ -102,18 +102,9 @@ class WithLossCell(nn.Cell):
         self._loss_fn = loss_fn
 
     def construct(self, x, img_shape, gt_bboxe, gt_label, gt_num):
-        loss1, loss2, loss3, loss4, loss5, loss6 = self._backbone(x, img_shape, gt_bboxe, gt_label, gt_num)
-        return self._loss_fn(loss1, loss2, loss3, loss4, loss5, loss6)
+        loss1, loss2 = self._backbone(x, img_shape, gt_bboxe, gt_label, gt_num)
+        return self._loss_fn(loss1, loss2)
 
-    @property
-    def backbone_network(self):
-        """
-        Get the backbone network.
-
-        Returns:
-            Cell, return backbone network.
-        """
-        return self._backbone
 
 
 class TrainOneStepCell(nn.Cell):

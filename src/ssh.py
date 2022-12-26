@@ -71,7 +71,6 @@ class SSH(nn.Cell):
         conv4_3, conv5_3 = self.vgg(x)
 
         m3_max_pooling_out = self.m3_max_pooling(conv5_3)
-        print(m3_max_pooling_out.shape)
         m3_out = self.m3_detect_model(m3_max_pooling_out)
 
         m2_out = self.m2_detect_model(conv5_3)

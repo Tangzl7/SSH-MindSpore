@@ -4,12 +4,12 @@ import time
 import numpy as np
 
 from mindspore.nn import SGD
-from mindspore import context
+from mindspore import context, TimeMonitor, Model
 import mindspore.common.dtype as mstype
 
 from src.config import config
 from src.train_ssh import TrainSSH
-from src.network_define import LossNet
+from src.network_define import LossNet, WithLossCell, TrainOneStepCell, LossCallBack
 from src.dataset import data_to_mindrecord_byte_image, create_wider_dataset
 
 
@@ -67,9 +67,17 @@ def train_ssh():
         net.to_float(mstype.float16)
 
     loss = LossNet()
-    opt = SGD(params=net.trainable_params(), learning_rate=lr, momentum=config.momentum,
+    opt = SGD(params=net.trainable_params(), learning_rate=config.lr, momentum=config.momentum,
               weight_decay=config.weight_decay, loss_scale=config.loss_scale)
+    net_with_loss = WithLossCell(net, loss)
+    net = TrainOneStepCell(net_with_loss, opt, sens=config.loss_scale)
 
+    time_cb = TimeMonitor(data_size=dataset_size)
+    loss_cb = LossCallBack(per_print_times=dataset_size, rank_id=rank)
+    cb = [time_cb, loss_cb]
+
+    model = Model(net)
+    model.train(config.epoch_size, dataset, callbacks=cb)
 
 train_ssh()
 '''
