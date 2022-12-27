@@ -6,6 +6,7 @@ import numpy as np
 from mindspore.nn import SGD
 from mindspore import context, TimeMonitor, Model
 import mindspore.common.dtype as mstype
+from mindspore.train.callback import CheckpointConfig, ModelCheckpoint
 
 from src.config import config
 from src.train_ssh import TrainSSH
@@ -74,7 +75,11 @@ def train_ssh():
 
     time_cb = TimeMonitor(data_size=dataset_size)
     loss_cb = LossCallBack(per_print_times=dataset_size, rank_id=rank)
-    cb = [time_cb, loss_cb]
+    ckptconfig = CheckpointConfig(save_checkpoint_steps=dataset_size,
+                                  keep_checkpoint_max=4)
+    save_checkpoint_path = os.path.join(config.save_checkpoint_path, "ckpt_" + str(rank) + "/")
+    ckpoint_cb = ModelCheckpoint(prefix='faster_rcnn', directory=save_checkpoint_path, config=ckptconfig)
+    cb = [time_cb, loss_cb, ckpoint_cb]
 
     model = Model(net)
     model.train(config.epoch_size, dataset, callbacks=cb)

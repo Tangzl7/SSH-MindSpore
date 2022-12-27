@@ -15,12 +15,14 @@ mindrecord_dir: './dataset/mindrecord/'
 image_dir: './dataset/WIDER_train/images/'
 anno_path: './dataset/wider_face_split/wider_face_train_bbx_gt.txt'
 
-lr: 0.04
+lr: 0.001
 momentum: 0.91
-batch_size: 2
+batch_size: 1
 loss_scale: 256
 weight_decay: 0.00001
 epoch_size: 1
+
+save_checkpoint_path: './ckpts'
 
 # bbox_assign_sampler
 neg_iou_thr: 0.3

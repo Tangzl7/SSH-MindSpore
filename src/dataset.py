@@ -273,7 +273,11 @@ def data_to_mindrecord_byte_image(config, prefix="wider.mindrecord", file_num=8)
     }
     writer.add_schema(wider_json, "wider_json")
 
+    num = 100
     for image_name in image_files:
+        if num == 0:
+            break
+        num -= 1
         with open(image_name, 'rb') as f:
             img = f.read()
         annos = np.array(image_anno_dict[image_name], dtype=np.int32)
