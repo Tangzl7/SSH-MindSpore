@@ -1,5 +1,5 @@
 # SSH-MindSpore模型复现（mindspore框架）
-mindspore版本的SSH模型，论文为SSH: Single Stage Headless Face Detector.
+mindspore版本的SSH模型，论文为SSH: Single Stage Headless Face Detector，项目地址：https://github.com/Tangzl7/SSH-MindSpore
 
 ## 简介
 SSH：Single Stage Headless Face Detector。不同于two-stages （先提供候选框然后进行分类）的检测网络，SSH是single stage的人脸检测网络，SSH直接从分类网络的前几层卷积层当中进行人脸检测。SSH网络结构是Headless的，而所谓的“Head”是指的网络参数占比较大的头模块，例如VGG16中包含大量参数的全连接层。
@@ -100,13 +100,13 @@ python train.py
 
 ### 测试
 
-1. 将test文件夹下的测试文件进行人脸检测，检测结果也会保存在改文件夹下：
+1. 将test文件夹下的测试文件进行人脸检测，检测结果也会保存在改文件夹，部分测试结果可见test文件夹：
 
 ```shell
 python test.py
 ```
 
-2. 测试结果如下。
+2. 一张图像测试结果如下。
 ![image](./images/test_out.png)
 
 

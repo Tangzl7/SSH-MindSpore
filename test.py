@@ -14,6 +14,7 @@ rank = 0
 device_num = 1
 context.set_context(mode=context.PYNATIVE_MODE, device_target=config.device_target, device_id=0)
 
+
 def pre_process(img):
     img = cv2.resize(img, (img.shape[1]//16*16, img.shape[0]//16*16))
 
