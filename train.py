@@ -4,12 +4,12 @@ import time
 import numpy as np
 
 from mindspore.nn import SGD
-from mindspore import context, TimeMonitor, Model
+from mindspore import context, TimeMonitor, Model, load_checkpoint, load_param_into_net
 import mindspore.common.dtype as mstype
 from mindspore.train.callback import CheckpointConfig, ModelCheckpoint
 
 from src.config import config
-from src.train_ssh import TrainSSH
+from src.ssh_model import SSHModel
 from src.network_define import LossNet, WithLossCell, TrainOneStepCell, LossCallBack
 from src.dataset import data_to_mindrecord_byte_image, create_wider_dataset
 
@@ -60,8 +60,15 @@ def prepare_wider_dataset():
 def train_ssh():
     dataset_size, dataset = prepare_wider_dataset()
 
-    net = TrainSSH(config)
+    net = SSHModel(config)
     net = net.set_train()
+
+    param_dict = load_checkpoint('./ssh.ckpt')
+    keys = [key for key in param_dict]
+    for k in keys:
+        if k.find('reg') != -1 or k.find('cls') != -1:
+            param_dict.pop(k)
+    load_param_into_net(net, param_dict)
 
     device_type = "Ascend" if context.get_context("device_target") == "Ascend" else "Others"
     if device_type == "Ascend":
@@ -78,26 +85,11 @@ def train_ssh():
     ckptconfig = CheckpointConfig(save_checkpoint_steps=dataset_size,
                                   keep_checkpoint_max=4)
     save_checkpoint_path = os.path.join(config.save_checkpoint_path, "ckpt_" + str(rank) + "/")
-    ckpoint_cb = ModelCheckpoint(prefix='faster_rcnn', directory=save_checkpoint_path, config=ckptconfig)
+    ckpoint_cb = ModelCheckpoint(prefix='ssh', directory=save_checkpoint_path, config=ckptconfig)
     cb = [time_cb, loss_cb, ckpoint_cb]
 
     model = Model(net)
     model.train(config.epoch_size, dataset, callbacks=cb)
 
+
 train_ssh()
-'''
-dataset_size, dataset = prepare_wider_dataset()
-print(dataset_size)
-for t in dataset.create_tuple_iterator():
-    img = t[0]
-    c = t[2][0][0]
-    img = img.asnumpy()[0]
-    img = np.transpose(img, (1, 2, 0))
-    img = (img - np.min(img)) / (np.max(img) - np.min(img))
-    img *= 255
-    cv2.imwrite('./tmp.jpg', np.uint8(img))
-    tmp = cv2.imread('./tmp.jpg')
-    draw_0 = cv2.rectangle(tmp, (int(c[0]), int(c[1])), (int(c[2]), int(c[3])), (255, 0, 0), 2)
-    cv2.imshow('t', draw_0)
-    cv2.waitKey(0)
-'''

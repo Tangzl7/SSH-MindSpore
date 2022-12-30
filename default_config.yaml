@@ -4,7 +4,6 @@ device_target: CPU
 # config
 img_width: 1024
 img_height: 896
-# The value of keep_ratio must be the same as the [KEEP_RATIO] parameter in Ascend310 inference
 keep_ratio: True
 flip_ratio: 0.5
 expand_ratio: 1.0
@@ -20,7 +19,7 @@ momentum: 0.91
 batch_size: 1
 loss_scale: 256
 weight_decay: 0.00001
-epoch_size: 1
+epoch_size: 10
 
 save_checkpoint_path: './ckpts'
 
@@ -31,6 +30,26 @@ min_pos_iou: 0.3
 num_gts: 128
 num_expected_neg: 256
 num_expected_pos: 128
+
+# train proposal
+rpn_proposal_nms_across_levels: False
+rpn_proposal_nms_pre: 2000
+rpn_proposal_nms_post: 2000
+rpn_proposal_max_num: 2000
+rpn_proposal_nms_thr: 0.7
+rpn_proposal_min_bbox_size: 0
+
+# test proposal
+rpn_nms_across_levels: False
+rpn_nms_pre: 1000
+rpn_nms_post: 1000
+rpn_max_num: 1000
+rpn_nms_thr: 0.7
+rpn_min_bbox_min_size: 0
+test_score_thr: 0.05
+test_iou_thr: 0.5
+test_max_per_img: 100
+test_batch_size: 1
 
 # loss weight
 loss_reg_weight: 1

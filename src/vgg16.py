@@ -25,7 +25,7 @@ def _make_layer(base, batch_norm):
                                kernel_size=3,
                                padding=0,
                                pad_mode='same',
-                               has_bias=False,
+                               has_bias=True,
                                weight_init=weight)
             if batch_norm:
                 layers += [conv2d, nn.BatchNorm2d(v), nn.ReLU()]
@@ -42,9 +42,6 @@ class Vgg(nn.Cell):
         self.conv4_3, self.conv5_3 = _make_layer(base, batch_norm=batch_norm)
         self.conv4_3 = nn.SequentialCell(self.conv4_3)
         self.conv5_3 = nn.SequentialCell(self.conv5_3)
-
-        # default_recurisive_init(self)
-        # self.custom_init_weight()
 
     def construct(self, x):
         conv4_3 = self.conv4_3(x)

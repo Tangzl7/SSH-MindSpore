@@ -8,11 +8,12 @@ from mindspore.ops import functional as F
 
 from src.ssh import SSH
 from src.config import config
+from src.proposal_generator import Proposal
 from src.anchor_generator import AnchorGenerator
 from src.bbox_assign_sample import BboxAssignSample
 
 
-class TrainSSH(nn.Cell):
+class SSHModel(nn.Cell):
 
     def __init__(self, config):
         super().__init__()
@@ -48,6 +49,8 @@ class TrainSSH(nn.Cell):
                               (config.img_height // 16, config.img_width // 16),
                               (config.img_height // 32, config.img_width // 32)]
         self.anchor_list = self.get_anchors(self.featmap_sizes)
+        self.proposal_generator = Proposal(config, 1, 2, True)
+        self.proposal_generator.set_train_local(config, False)
 
         # net
         self.ssh = SSH()
@@ -92,9 +95,10 @@ class TrainSSH(nn.Cell):
 
     def construct(self, inputs, img_metas, gt_bboxes, gt_labels, gt_valids):
         detect_out = self.ssh(inputs)
-        gt_bboxes = self.cast(gt_bboxes, mstype.float32)
-        gt_labels = self.cast(gt_labels, mstype.float32)
-        gt_valids = self.cast(gt_valids, mstype.float32)
+        if img_metas is not None:
+            gt_bboxes = self.cast(gt_bboxes, mstype.float32)
+            gt_labels = self.cast(gt_labels, mstype.float32)
+            gt_valids = self.cast(gt_valids, mstype.float32)
 
         rpn_cls_score = ()
         rpn_bbox_pred = ()
@@ -159,7 +163,7 @@ class TrainSSH(nn.Cell):
                     labels += (label[begin:end:stride],)
                     label_weights += (label_weight[begin:end:stride],)
 
-            for i in range(self.num_layers):
+            for i in range(3):
                 bbox_target_using = ()
                 bbox_weight_using = ()
                 label_using = ()
@@ -203,5 +207,6 @@ class TrainSSH(nn.Cell):
 
                 output = (cls_loss, reg_loss)
         else:
-            output = (cls_score_total, bbox_pred_total)
+            proposal, proposal_mask = self.proposal_generator(cls_score_total, bbox_pred_total, self.anchor_list)
+            output = (proposal, proposal_mask)
         return output
